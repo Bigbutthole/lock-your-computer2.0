@@ -31,8 +31,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -68,13 +68,6 @@
             this.label3.TabIndex = 2;
             this.label3.Text = "我可不想惹事，最好别找我";
             // 
-            // progressBar1
-            // 
-            this.progressBar1.Location = new System.Drawing.Point(116, 264);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(564, 23);
-            this.progressBar1.TabIndex = 3;
-            // 
             // label4
             // 
             this.label4.AutoSize = true;
@@ -86,6 +79,17 @@
             this.label4.TabIndex = 4;
             this.label4.Text = "请不要强制关闭此程序或电脑，否则你的文件将会永久丢失\r\n";
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("宋体", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label5.ForeColor = System.Drawing.Color.Red;
+            this.label5.Location = new System.Drawing.Point(169, 292);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(42, 14);
+            this.label5.TabIndex = 5;
+            this.label5.Text = "     ";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -93,8 +97,8 @@
             this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.ControlBox = false;
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -104,7 +108,7 @@
             this.Name = "Form1";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
-            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
             this.TopMost = true;
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
@@ -120,8 +124,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
     }
 }
 

